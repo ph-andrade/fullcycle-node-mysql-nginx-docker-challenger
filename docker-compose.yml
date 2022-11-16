@@ -1,0 +1,40 @@
+version: "3.7"
+
+services:
+  database: 
+    build: ./mysql
+    image: phdandrade/mysqldockerchallenge
+    container_name: db
+    restart: always
+    tty: true
+    command: --innodb-use-native-aio=0
+    environment: 
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=nodedb
+    volumes: 
+      - ./mysql/data:/var/lib/mysql
+    networks:
+      - node-network
+  app:
+    build: .
+    image: phdandrade/nodedockerchallenge
+    container_name: app
+    tty: true
+    networks:
+      - node-network
+    depends_on: 
+      - database
+  nginx:
+    build: ./nginx
+    image: phdandrade/nginxdockerchallenge
+    container_name: proxy
+    ports:
+      - "8080:80"
+    networks:
+      - node-network
+    depends_on: 
+      - app
+
+networks:
+  node-network:
+    driver: bridge
